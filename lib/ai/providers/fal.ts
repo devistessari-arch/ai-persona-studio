@@ -18,6 +18,6 @@ export class FalFluxKontextProvider implements ImageProvider {
       webhookUrl
     });
 
-    return { requestId: request_id, provider: "fal.ai", model: MODEL };
+    return { requestId: String(request_id ?? ""), provider: "fal.ai", model: MODEL };
   }
 }
