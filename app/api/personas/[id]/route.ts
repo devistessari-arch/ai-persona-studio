@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const persona = await db.persona.findUnique({
     where: { id },
     include: { identityProfile: true, references: true, generations: { orderBy: { createdAt: "desc" } } }
