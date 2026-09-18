@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "vercel-build": "prisma generate && prisma db push && next build"
   },
   "dependencies": {
     "@fal-ai/client": "^1.6.2",
