@@ -11,7 +11,7 @@ type FalPayload = {
 export async function POST(request: Request) {
   const url = new URL(request.url);
   const generationId = url.searchParams.get("generationId");
-  const kind = url.searchParams.get("kind");
+  const kind = url.searchParams.get("kind");\n  const referenceType = url.searchParams.get("referenceType");
   if (!generationId) return NextResponse.json({ error: "Missing generationId" }, { status: 400 });
 
   const payload = await request.json() as FalPayload;
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     data: { status: "COMPLETED", outputUrl: images[0]?.url, seed: payload.seed?.toString() }
   });
 
-  if (kind === "master-candidates") {
+  if (kind === "reference-pack" && referenceType && images[0]?.url) {\n    await db.referenceImage.create({ data: { personaId: generation.personaId, type: referenceType as any, url: images[0].url, review: "PENDING", provider: generation.provider, model: generation.model, prompt: generation.finalPrompt } });\n  }\n\n  if (kind === "master-candidates") {
     await db.referenceImage.createMany({
       data: images.flatMap(image => image.url ? [{
         personaId: generation.personaId, type: "MASTER" as const, url: image.url,
