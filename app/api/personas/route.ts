@@ -10,7 +10,7 @@ export async function GET() {
   return NextResponse.json(personas);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request) {\n  try {
   const parsed = createPersonaSchema.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
