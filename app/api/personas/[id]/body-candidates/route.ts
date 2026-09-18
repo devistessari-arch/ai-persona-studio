@@ -15,10 +15,11 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
   ? "Adult anatomical reference presentation: neutral non-sexualized standing pose, uncovered upper torso for accurate chest and skin reference, while the pelvic and intimate area remains fully covered by opaque neutral briefs. No erotic posing or sexual activity."
   : "Use simple fitted everyday clothing that clearly communicates body proportions without nudity or sexualized presentation.";
  const prompt=[
-  "Create four ultra-photorealistic full-body photographs of the exact same synthetic adult identity shown in the canonical face reference.",
+  "Create four ultra-photorealistic VERTICAL full-length photographs of the exact same synthetic adult identity shown in the canonical face reference. The supplied reference is for FACE IDENTITY ONLY; do not preserve its close-up framing.",
   "FACE LOCK: preserve the canonical face identity with maximum fidelity: facial geometry, apparent age, complexion, eyes, hair identity and distinctive traits. Do not redesign or beautify the face.",
   `Persona body description: ${persona.bodyDescription||"natural anatomically plausible adult body"}.`,
   `Canonical traits: ${JSON.stringify(traits)}.`,
+  "COMPOSITION IS MANDATORY: zoom the camera out and reconstruct a complete person. Every output must show the entire body from the top of the hair to both feet, with visible floor below the shoes/feet and margin above the head. The person should occupy roughly 75-85% of the vertical frame. Never output a headshot, close-up, bust portrait, waist-up portrait or cropped legs/feet.",
   "BODY CREATION: show the entire body head-to-toe in a relaxed standing front or slight three-quarter pose. Create a natural, anatomically plausible physique consistent with the persona description.",
   "BODY LOCK PRIORITY: faithfully establish and preserve shoulder width, chest proportions, torso length, waist, pelvis width, hip contour, arm and leg proportions, muscle tone, body-fat distribution, posture and overall silhouette so the selected Body Master can become a stable canonical reference.",
   "SKIN IDENTITY: preserve coherent complexion across face and body, including natural tonal transitions, pores, subtle pigmentation, freckles, moles or small non-identifying skin characteristics when consistent with the persona. Avoid artificial smoothing.",
