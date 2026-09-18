@@ -14,7 +14,7 @@ const views = [
 ] as const;
 
 export async function POST(_: Request, { params }: { params: Promise<{ id:string }> }) {
-  const { id } = params;
+  const { id } = await params;
   const persona = await db.persona.findUnique({ where:{ id }, include:{ references:true } });
   if (!persona) return NextResponse.json({error:"Persona not found"},{status:404});
   const master = persona.references.find(r=>r.type==="MASTER" && r.review==="APPROVED");
