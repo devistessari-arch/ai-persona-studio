@@ -5,9 +5,9 @@ const MODEL = "fal-ai/flux-pro/kontext";
 
 export class FalFluxKontextProvider implements ImageProvider {
   async submit(request: ImageGenerationRequest, webhookUrl: string): Promise<ProviderJob> {
-    if (!process.env.FAL_KEY) throw new Error("FAL_KEY is not configured.");
+    if (!(process.env.FAL_KEY ?? process.env.FAL_KEY_FAL_KEY)) throw new Error("FAL_KEY is not configured.");
 
-    fal.config({ credentials: process.env.FAL_KEY });
+    fal.config({ credentials: (process.env.FAL_KEY ?? process.env.FAL_KEY_FAL_KEY) });
 
     const { request_id } = await fal.queue.submit(MODEL, {
       input: {
