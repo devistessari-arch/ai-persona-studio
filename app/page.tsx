@@ -1,3 +1,5 @@
+import { db } from "@/lib/db";
+
 const modules = [
   ["Create Persona", "Definisci identità, aspetto e stile del personaggio.", "/create"],
   ["Identity Lock", "Mantieni coerenti volto, corpo e tratti approvati.", "#"],
@@ -5,7 +7,14 @@ const modules = [
   ["Video Studio", "Anima una generazione approvata con pipeline asincrona.", "#"]
 ];
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const personas = await db.persona.findMany({
+    orderBy: { createdAt: "desc" },
+    select: { id: true, name: true, description: true }
+  });
+
   return (
     <main>
       <header>
@@ -17,6 +26,24 @@ export default function Home() {
         <h2>Una persona AI coerente.<br/>Da una foto a un intero mondo.</h2>
         <p>Crea personaggi sintetici adulti, costruisci il Reference Pack e genera contenuti mantenendo l'identità.</p>
       </section>
+
+      {personas.length > 0 && (
+        <section style={{ marginBottom: "48px" }}>
+          <p className="eyebrow">LE MIE PERSONAS</p>
+          <div className="grid">
+            {personas.map((persona) => (
+              <a className="cardLink" href={`/personas/${persona.id}`} key={persona.id}>
+                <article>
+                  <h3>{persona.name}</h3>
+                  <p>{persona.description?.slice(0, 180) || "Persona sintetica"}</p>
+                  <span>Apri Persona →</span>
+                </article>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="grid">
         {modules.map(([title,copy,href]) => <a className="cardLink" href={href} key={title}><article><h3>{title}</h3><p>{copy}</p><span>Apri →</span></article></a>)}
       </section>
