@@ -13,7 +13,7 @@ export class FalFluxKontextProvider implements ImageProvider {
       input: {
         prompt: request.prompt,
         image_url: request.referenceUrls[0],
-        aspect_ratio: request.aspectRatio
+        aspect_ratio: request.aspectRatio as "21:9" | "16:9" | "4:3" | "3:2" | "1:1" | "2:3" | "3:4" | "9:16" | "9:21"
       },
       webhookUrl
     });
