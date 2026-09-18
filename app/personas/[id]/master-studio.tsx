@@ -1,13 +1,19 @@
 "use client";
-import { useState } from "react";
-
-type Ref = { id:string; url:string; review:string; type:string };
-
-export default function MasterStudio({ personaId, initialReferences }: { personaId:string; initialReferences:Ref[] }) {
-  const [refs,setRefs]=useState(initialReferences);
-  const [busy,setBusy]=useState(false);
-  const masters=refs.filter(r=>r.type==="MASTER");
-  async function generate(){setBusy(true);const r=await fetch(`/api/personas/${personaId}/master-candidates`,{method:"POST"});setBusy(false);if(r.ok) alert("Generazione avviata. I 4 candidati compariranno quando il job fal.ai sarà completato.");else alert("Impossibile avviare la generazione. Verifica FAL_KEY e configurazione server.");}
-  async function approve(id:string){const r=await fetch(`/api/references/${id}/approve-master`,{method:"POST"});if(r.ok)setRefs(refs.map(x=>x.type==="MASTER"?{...x,review:x.id===id?"APPROVED":"REJECTED"}:x));}
-  return <section><div className="studioHead"><div><p className="eyebrow">MASTER PORTRAIT</p><h2>Scegli il volto canonico</h2></div><button onClick={generate} disabled={busy}>{busy?"Invio...":"Generate 4 candidates"}</button></div>{masters.length===0?<div className="emptyState">Nessun Master Portrait ancora generato.</div>:<div className="portraitGrid">{masters.map(x=><article className={x.review==="APPROVED"?"portrait approved":"portrait"} key={x.id}><img src={x.url} alt="Synthetic master candidate"/><div><span>{x.review}</span><button onClick={()=>approve(x.id)} disabled={x.review==="APPROVED"}>{x.review==="APPROVED"?"MASTER ✓":"Use as Master"}</button></div></article>)}</div>}</section>;
+import { useEffect, useState } from "react";
+type Ref={id:string;url:string;review:string;type:string};
+export default function MasterStudio({personaId,initialReferences}:{personaId:string;initialReferences:Ref[]}){
+ const [refs,setRefs]=useState(initialReferences),[busy,setBusy]=useState(false),[packBusy,setPackBusy]=useState(false),[pending,setPending]=useState(0);
+ const masters=refs.filter(r=>r.type==="MASTER"), pack=refs.filter(r=>r.type!=="MASTER"), approved=masters.some(r=>r.review==="APPROVED");
+ async function refresh(){const r=await fetch(`/api/personas/${personaId}/references`,{cache:"no-store"});if(r.ok){const d=await r.json();setRefs(d.references);setPending(d.pendingGenerations)}}
+ useEffect(()=>{const t=setInterval(refresh,5000);return()=>clearInterval(t)},[]);
+ async function generate(){setBusy(true);const r=await fetch(`/api/personas/${personaId}/master-candidates`,{method:"POST"});setBusy(false);if(r.ok){setPending(x=>x+1)}else alert("Impossibile avviare la generazione. Verifica FAL_KEY e configurazione server.")}
+ async function approve(id:string){const r=await fetch(`/api/references/${id}/approve-master`,{method:"POST"});if(r.ok)await refresh()}
+ async function generatePack(){setPackBusy(true);const r=await fetch(`/api/personas/${personaId}/reference-pack`,{method:"POST"});setPackBusy(false);if(r.ok)await refresh();else alert("Prima approva un Master Portrait.")}
+ async function review(id:string,review:"APPROVED"|"REJECTED"){await fetch(`/api/references/${id}/review`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({review})});await refresh()}
+ return <section>
+  <div className="studioHead"><div><p className="eyebrow">MASTER PORTRAIT</p><h2>Scegli il volto canonico</h2><small>{pending>0?`${pending} generazioni in elaborazione…`:""}</small></div><button onClick={generate} disabled={busy}>{busy?"Invio…":"Generate 4 candidates"}</button></div>
+  {masters.length===0?<div className="emptyState">Nessun Master Portrait ancora generato.</div>:<div className="portraitGrid">{masters.map(x=><article className={x.review==="APPROVED"?"portrait approved":"portrait"} key={x.id}><img src={x.url} alt="Synthetic master candidate"/><div><span>{x.review}</span><button onClick={()=>approve(x.id)} disabled={x.review==="APPROVED"}>{x.review==="APPROVED"?"MASTER ✓":"Use as Master"}</button></div></article>)}</div>}
+  {approved&&<><div className="studioHead referenceTitle"><div><p className="eyebrow">IDENTITY LOCK</p><h2>Reference Pack</h2><small>8 viste per stabilizzare l'identità nei photoshoot.</small></div><button onClick={generatePack} disabled={packBusy}>{packBusy?"Invio…":pack.length?"Regenerate Pack":"Generate Reference Pack"}</button></div>
+  {pack.length===0?<div className="emptyState">Il Master è approvato. Genera il Reference Pack.</div>:<div className="referenceGrid">{pack.map(x=><article className={x.review==="APPROVED"?"portrait approved":"portrait"} key={x.id}><img src={x.url} alt={x.type}/><div className="reviewBar"><span>{x.type.replaceAll("_"," ")}</span><div><button onClick={()=>review(x.id,"APPROVED")}>✓</button><button onClick={()=>review(x.id,"REJECTED")}>×</button></div></div></article>)}</div>}</>}
+ </section>
 }
