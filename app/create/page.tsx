@@ -11,7 +11,7 @@ export default function CreatePersonaPage() {
     const form=new FormData(event.currentTarget);
     const payload=Object.fromEntries(form.entries());
     const response=await fetch("/api/personas",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...payload,apparentAge:Number(payload.apparentAge),identityStrength:90})});
-    if(!response.ok){setState("error");setMessage("Controlla i campi e riprova.");return;}
+    if(!response.ok){let detail="";try{const e=await response.json();detail=e.error?String(e.error):JSON.stringify(e);}catch{}setState("error");setMessage(detail||"Impossibile creare la persona.");return;}
     const persona=await response.json();
     setState("done");
     setMessage(`${persona.name} è stata creata. Apertura Master Studio...`);
