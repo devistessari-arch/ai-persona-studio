@@ -32,7 +32,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id:string
     const generation=await db.generation.create({data:{personaId:id,type:"IMAGE",provider:"fal.ai",model:"fal-ai/flux-2/edit",prompt,finalPrompt:prompt,referenceImageIds:[master.id]}});
     try {
       const job=await submitReferencePackImage({prompt,masterUrl:master.url,webhookUrl:`${process.env.APP_URL}/api/webhooks/fal?generationId=${generation.id}&kind=reference-pack&referenceType=${type}`});
-      await db.generation.update({where:{id:generation.id},data:{providerRequestId:job.requestId,status:"PROCESSING"}});
+      await db.generation.update({where:{id:generation.id},data:{providerRequestId:job.requestId || undefined,status:"PROCESSING"}});
       submitted.push({type,generationId:generation.id,requestId:job.requestId});
     } catch(error) {
       await db.generation.update({where:{id:generation.id},data:{status:"FAILED",errorMessage:error instanceof Error?error.message:"Provider error"}});
