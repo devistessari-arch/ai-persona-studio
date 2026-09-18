@@ -28,8 +28,7 @@ export default function CreatePersonaPage() {
 
     const persona = await response.json();
     setState("done");
-    setMessage(`${persona.name} è stata creata. Ora possiamo generare il Master Portrait.`);
-    event.currentTarget.reset();
+    setMessage(`${persona.name} è stata creata. Apertura Master Studio...`);\n    window.location.href = `/personas/${persona.id}`;
   }
 
   return (
