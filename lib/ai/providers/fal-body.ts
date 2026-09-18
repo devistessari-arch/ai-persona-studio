@@ -14,10 +14,7 @@ export async function submitBodyCandidates(args:{prompt:string;masterUrl:string;
     input: {
       prompt: args.prompt,
       image_urls: [args.masterUrl],
-      image_size: "portrait_4_3",
       num_images: 4,
-      guidance_scale: 3.5,
-      num_inference_steps: 32,
       enable_prompt_expansion: true,
       enable_safety_checker: true,
       output_format: "jpeg",
