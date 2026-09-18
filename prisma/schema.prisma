@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReferenceType {
+  MASTER
+  FACE_FRONT
+  FACE_LEFT_3Q
+  FACE_RIGHT_3Q
+  PROFILE_LEFT
+  PROFILE_RIGHT
+  UPPER_BODY
+  FULL_BODY_FRONT
+  FULL_BODY_SIDE
+}
+
+enum GenerationType {
+  IMAGE
+  VIDEO
+}
+
+enum GenerationStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Persona {
+  id                  String          @id @default(cuid())
+  userId              String
+  name                String
+  description         String?
+  apparentAge         Int
+  genderPresentation  String
+  isSynthetic         Boolean         @default(true)
+  faceDescription     String?
+  bodyDescription     String?
+  hairDescription     String?
+  eyeDescription      String?
+  skinDescription     String?
+  distinctiveFeatures String?
+  defaultStyle        String?
+  identityStrength    Int             @default(85)
+  identityProfile     IdentityProfile?
+  references          ReferenceImage[]
+  generations         Generation[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+model IdentityProfile {
+  id                  String   @id @default(cuid())
+  personaId           String   @unique
+  immutableTraits     Json
+  variableTraits      Json?
+  faceStrength        Int      @default(90)
+  bodyStrength        Int      @default(80)
+  hairStrength        Int      @default(75)
+  outfitStrength      Int      @default(25)
+  persona             Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model ReferenceImage {
+  id          String        @id @default(cuid())
+  personaId   String
+  type        ReferenceType
+  url         String
+  review      ReviewStatus  @default(PENDING)
+  provider    String?
+  model       String?
+  prompt      String?
+  persona     Persona       @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+
+  @@index([personaId, review])
+}
+
+model Generation {
+  id                String           @id @default(cuid())
+  personaId         String
+  type              GenerationType
+  status            GenerationStatus @default(QUEUED)
+  review            ReviewStatus     @default(PENDING)
+  provider          String
+  model             String
+  providerRequestId String?
+  prompt            String
+  finalPrompt       String?
+  seed              String?
+  outputUrl         String?
+  estimatedCostUsd  Decimal?         @db.Decimal(10, 4)
+  actualCostUsd     Decimal?         @db.Decimal(10, 4)
+  referenceImageIds String[]
+  errorMessage      String?
+  persona           Persona          @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  job               GenerationJob?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([personaId, createdAt])
+}
+
+model GenerationJob {
+  id            String           @id @default(cuid())
+  generationId  String           @unique
+  status        GenerationStatus @default(QUEUED)
+  attempts      Int              @default(0)
+  payload       Json
+  generation    Generation       @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
