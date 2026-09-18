@@ -17,6 +17,8 @@ enum ReferenceType {
   UPPER_BODY
   FULL_BODY_FRONT
   FULL_BODY_SIDE
+  BODY_CANDIDATE
+  BODY_MASTER
 }
 
 enum GenerationType {
