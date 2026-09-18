@@ -10,3 +10,11 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   if (!persona) return NextResponse.json({ error: "Persona not found" }, { status: 404 });
   return NextResponse.json(persona);
 }
+
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const persona = await db.persona.findUnique({ where: { id }, select: { id: true } });
+  if (!persona) return NextResponse.json({ error: "Persona non trovata" }, { status: 404 });
+  await db.persona.delete({ where: { id } });
+  return NextResponse.json({ ok: true });
+}
