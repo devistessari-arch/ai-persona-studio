@@ -81,6 +81,11 @@ export async function POST(request: Request) {
     });
   }
 
+  if (kind === "body-candidates") {
+    const rows = images.flatMap((image) => image.url ? [{ personaId: generation.personaId, type: "BODY_CANDIDATE" as const, url: image.url, review: "PENDING" as const, provider: generation.provider, model: generation.model, prompt: generation.finalPrompt }] : []);
+    if (rows.length > 0) await db.referenceImage.createMany({ data: rows });
+  }
+
   if (kind === "master-candidates") {
     const rows = images.flatMap((image) =>
       image.url
