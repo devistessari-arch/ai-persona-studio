@@ -6,7 +6,7 @@ export default function MasterStudio({personaId,initialReferences}:{personaId:st
  const masters=refs.filter(r=>r.type==="MASTER"), pack=refs.filter(r=>r.type!=="MASTER"), approved=masters.some(r=>r.review==="APPROVED");
  async function refresh(){const r=await fetch(`/api/personas/${personaId}/references`,{cache:"no-store"});if(r.ok){const d=await r.json();setRefs(d.references);setPending(d.pendingGenerations)}}
  useEffect(()=>{const t=setInterval(refresh,5000);return()=>clearInterval(t)},[]);
- async function generate(){setBusy(true);const r=await fetch(`/api/personas/${personaId}/master-candidates`,{method:"POST"});setBusy(false);if(r.ok){setPending(x=>x+1)}else alert("Impossibile avviare la generazione. Verifica FAL_KEY e configurazione server.")}
+ async function generate(){setBusy(true);const r=await fetch(`/api/personas/${personaId}/master-candidates`,{method:"POST"});setBusy(false);if(r.ok){setPending(x=>x+1)}else{let message=`Errore ${r.status}`;try{const d=await r.json();if(d?.error)message=d.error}catch{}alert(`Impossibile avviare la generazione.\n\n${message}`)}}
  async function approve(id:string){const r=await fetch(`/api/references/${id}/approve-master`,{method:"POST"});if(r.ok)await refresh()}
  async function generatePack(){setPackBusy(true);const r=await fetch(`/api/personas/${personaId}/reference-pack`,{method:"POST"});setPackBusy(false);if(r.ok)await refresh();else alert("Prima approva un Master Portrait.")}
  async function review(id:string,review:"APPROVED"|"REJECTED"){await fetch(`/api/references/${id}/review`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({review})});await refresh()}
