@@ -49,3 +49,34 @@ export async function recoverMasterCandidateResult(requestId: string) {
     seed: data?.seed,
   };
 }
+
+const SYNTH_MODEL = "fal-ai/flux-2/edit";
+
+export async function submitSyntheticIdentityFromRealPhoto(
+  file: File,
+  prompt: string,
+  webhookUrl: string
+) {
+  fal.config({ credentials: getFalCredentials() });
+  const sourceUrl = await fal.storage.upload(file);
+
+  const result = await fal.queue.submit(SYNTH_MODEL, {
+    input: {
+      prompt,
+      image_urls: [sourceUrl],
+      image_size: "portrait_4_3",
+      num_images: 4,
+      guidance_scale: 3.5,
+      num_inference_steps: 32,
+      enable_prompt_expansion: true,
+      enable_safety_checker: true,
+      output_format: "jpeg",
+    },
+    webhookUrl,
+  });
+
+  return {
+    requestId: result.request_id ? String(result.request_id) : undefined,
+    model: SYNTH_MODEL,
+  };
+}
