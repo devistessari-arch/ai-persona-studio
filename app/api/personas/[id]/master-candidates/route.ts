@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { submitMasterCandidates } from "@/lib/ai/providers/fal-bootstrap";
 
-export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export async function POST(_: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
   const persona = await db.persona.findUnique({ where: { id }, include: { identityProfile: true } });
   if (!persona?.identityProfile) return NextResponse.json({ error: "Persona not found" }, { status: 404 });
 
