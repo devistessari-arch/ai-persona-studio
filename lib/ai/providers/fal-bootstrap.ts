@@ -39,3 +39,13 @@ export async function submitMasterCandidates(
     model: MODEL,
   };
 }
+
+export async function recoverMasterCandidateResult(requestId: string) {
+  fal.config({ credentials: getFalCredentials() });
+  const result = await fal.queue.result(MODEL, { requestId });
+  const data = result.data as { images?: Array<{ url?: string }>; seed?: number };
+  return {
+    images: data?.images ?? [],
+    seed: data?.seed,
+  };
+}
