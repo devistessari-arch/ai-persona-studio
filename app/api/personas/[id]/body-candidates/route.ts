@@ -20,10 +20,13 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
   `Persona body description: ${persona.bodyDescription||"natural anatomically plausible adult body"}.`,
   `Canonical traits: ${JSON.stringify(traits)}.`,
   "BODY CREATION: show the entire body head-to-toe in a relaxed standing front or slight three-quarter pose. Create a natural, anatomically plausible physique consistent with the persona description.",
+  "BODY LOCK PRIORITY: faithfully establish and preserve shoulder width, chest proportions, torso length, waist, pelvis width, hip contour, arm and leg proportions, muscle tone, body-fat distribution, posture and overall silhouette so the selected Body Master can become a stable canonical reference.",
+  "SKIN IDENTITY: preserve coherent complexion across face and body, including natural tonal transitions, pores, subtle pigmentation, freckles, moles or small non-identifying skin characteristics when consistent with the persona. Avoid artificial smoothing.",
   "REALISM: genuine unretouched camera-photo appearance, realistic skin texture and tonal variation, natural joints, hands, fingers, shoulders, waist, hips, knees and feet. Avoid mannequin proportions, plastic skin, impossible anatomy and exaggerated features.",
   presentation,
   "Neutral real-world or simple studio environment, natural diffused light, restrained sharpening, realistic lens perspective, subtle sensor grain. No CGI, illustration, HDR, glamour rendering or text.",
-  "All four outputs must preserve ONE face identity while offering small natural variations in body proportions for Master Body selection."
+  "All four outputs must preserve ONE face identity. Offer only small, plausible variations in physique for selection; do not randomly change height impression, skeletal proportions or body type between candidates.",
+  "The selected result is intended to become the canonical Body Master for later full-identity reference generation."
  ].join("\n");
  const generation=await db.generation.create({data:{personaId:id,type:"IMAGE",provider:"fal.ai",model:"fal-ai/flux-2/edit",prompt,finalPrompt:prompt,referenceImageIds:[master.id]}});
  try{
