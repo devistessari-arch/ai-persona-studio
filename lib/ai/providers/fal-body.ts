@@ -1,6 +1,6 @@
 import { fal } from "@fal-ai/client";
 
-const BLUEPRINT_MODEL = "fal-ai/flux-2-pro";
+const BLUEPRINT_MODEL = "fal-ai/flux-2";
 const COMPOSITE_MODEL = "fal-ai/flux-2-pro/edit";
 
 function configure() {
@@ -15,7 +15,7 @@ export async function submitBodyBlueprint(args:{prompt:string;webhookUrl:string}
     input: {
       prompt: args.prompt,
       image_size: "portrait_16_9",
-      safety_tolerance: "2",
+      num_images: 1,
       enable_safety_checker: true,
       output_format: "jpeg",
     },
