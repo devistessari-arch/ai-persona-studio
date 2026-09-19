@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { submitBodyCandidates } from "@/lib/ai/providers/fal-body";
+import { submitBodyBlueprint } from "@/lib/ai/providers/fal-body";
 
 export async function POST(request:Request,{params}:{params:Promise<{id:string}>}) {
  const {id}=await params;
@@ -15,25 +15,22 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
   ? "Adult anatomical reference presentation: neutral non-sexualized standing pose, uncovered upper torso for accurate chest and skin reference, while the pelvic and intimate area remains fully covered by opaque neutral briefs. No erotic posing or sexual activity."
   : "Use simple fitted everyday clothing that clearly communicates body proportions without nudity or sexualized presentation.";
  const prompt=[
-  "Create four ultra-photorealistic VERTICAL full-length photographs of the exact same synthetic adult identity shown in the canonical face reference. The supplied reference is for FACE IDENTITY ONLY; do not preserve its close-up framing.",
-  "FACE LOCK: preserve the canonical face identity with maximum fidelity: facial geometry, apparent age, complexion, eyes, hair identity and distinctive traits. Do not redesign or beautify the face.",
+  "Create ONE ultra-photorealistic vertical full-body BODY BLUEPRINT for a completely synthetic adult person.",
+  "This first stage defines body proportions and composition only. A canonical face will be applied in a separate identity-compositing stage.",
+  `Apparent age: ${persona.apparentAge}. Gender presentation: ${persona.genderPresentation}.`,
   `Persona body description: ${persona.bodyDescription||"natural anatomically plausible adult body"}.`,
-  `Canonical traits: ${JSON.stringify(traits)}.`,
-  "COMPOSITION IS MANDATORY: zoom the camera out and reconstruct a complete person. Every output must show the entire body from the top of the hair to both feet, with visible floor below the shoes/feet and margin above the head. The person should occupy roughly 75-85% of the vertical frame. Never output a headshot, close-up, bust portrait, waist-up portrait or cropped legs/feet.",
-  "BODY CREATION: show the entire body head-to-toe in a relaxed standing front or slight three-quarter pose. Create a natural, anatomically plausible physique consistent with the persona description.",
-  "BODY LOCK PRIORITY: faithfully establish and preserve shoulder width, chest proportions, torso length, waist, pelvis width, hip contour, arm and leg proportions, muscle tone, body-fat distribution, posture and overall silhouette so the selected Body Master can become a stable canonical reference.",
-  "SKIN IDENTITY: preserve coherent complexion across face and body, including natural tonal transitions, pores, subtle pigmentation, freckles, moles or small non-identifying skin characteristics when consistent with the persona. Avoid artificial smoothing.",
-  "REALISM: genuine unretouched camera-photo appearance, realistic skin texture and tonal variation, natural joints, hands, fingers, shoulders, waist, hips, knees and feet. Avoid mannequin proportions, plastic skin, impossible anatomy and exaggerated features.",
+  `Canonical traits relevant to physique and skin: ${JSON.stringify(traits)}.`,
+  "MANDATORY COMPOSITION: one person only, standing naturally, complete body visible from top of head to both feet, visible floor below both feet, margin above head, body occupying about 75-85% of a tall vertical frame.",
+  "Use a neutral front or very slight three-quarter stance, arms relaxed and separated enough from the torso to read silhouette and proportions.",
+  "Establish realistic shoulder width, chest proportions, torso length, waist, pelvis width, hip contour, arm and leg proportions, muscle tone, body-fat distribution and posture.",
   presentation,
-  "Neutral real-world or simple studio environment, natural diffused light, restrained sharpening, realistic lens perspective, subtle sensor grain. No CGI, illustration, HDR, glamour rendering or text.",
-  "All four outputs must preserve ONE face identity. Offer only small, plausible variations in physique for selection; do not randomly change height impression, skeletal proportions or body type between candidates.",
-  "The selected result is intended to become the canonical Body Master for later full-identity reference generation."
+  "Extreme photographic realism: ordinary unretouched camera photograph, realistic skin, hands, fingers, joints, knees and feet, natural lens perspective and diffused light. No collage, contact sheet, duplicated person, CGI, illustration, glamour rendering or text."
  ].join("\n");
- const generation=await db.generation.create({data:{personaId:id,type:"IMAGE",provider:"fal.ai",model:"fal-ai/flux-2/edit",prompt,finalPrompt:prompt,referenceImageIds:[master.id]}});
+ const generation=await db.generation.create({data:{personaId:id,type:"IMAGE",provider:"fal.ai",model:"fal-ai/flux-2-pro",prompt,finalPrompt:prompt,referenceImageIds:[master.id]}});
  try{
   const origin=process.env.APP_URL?.trim()||(process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()?`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.trim().replace(/^https?:\/\//,"")}`:new URL(request.url).origin);
-  const webhookUrl=new URL(`/api/webhooks/fal?generationId=${generation.id}&kind=body-candidates&referenceType=BODY_CANDIDATE`,origin).toString();
-  const job=await submitBodyCandidates({prompt,masterUrl:master.url,webhookUrl});
+  const webhookUrl=new URL(`/api/webhooks/fal?generationId=${generation.id}&kind=body-blueprint&faceMasterId=${master.id}`,origin).toString();
+  const job=await submitBodyBlueprint({prompt,webhookUrl});
   await db.generation.update({where:{id:generation.id},data:{status:"PROCESSING",providerRequestId:job.requestId}});
   return NextResponse.json({generationId:generation.id,requestId:job.requestId},{status:202});
  }catch(error){
