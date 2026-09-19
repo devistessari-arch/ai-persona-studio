@@ -26,7 +26,7 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
   presentation,
   "Extreme photographic realism: ordinary unretouched camera photograph, realistic skin, hands, fingers, joints, knees and feet, natural lens perspective and diffused light. No collage, contact sheet, duplicated person, CGI, illustration, glamour rendering or text."
  ].join("\n");
- const generation=await db.generation.create({data:{personaId:id,type:"IMAGE",provider:"fal.ai",model:"fal-ai/flux-2-pro",prompt,finalPrompt:prompt,referenceImageIds:[master.id]}});
+ const generation=await db.generation.create({data:{personaId:id,type:"IMAGE",provider:"fal.ai",model:"fal-ai/flux-2",prompt,finalPrompt:prompt,referenceImageIds:[master.id]}});
  try{
   const origin=process.env.APP_URL?.trim()||(process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()?`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.trim().replace(/^https?:\/\//,"")}`:new URL(request.url).origin);
   const webhookUrl=new URL(`/api/webhooks/fal?generationId=${generation.id}&kind=body-blueprint&faceMasterId=${master.id}`,origin).toString();
